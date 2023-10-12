@@ -11,5 +11,5 @@ import java.util.Map;
 @NoArgsConstructor
 @Configuration
 public class VersionKey {
-    private Map<String, String> memory = new HashMap<>();
+    private Map<String, byte[]> memory = new HashMap<>();
 }

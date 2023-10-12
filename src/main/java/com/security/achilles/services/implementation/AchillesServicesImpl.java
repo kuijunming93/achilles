@@ -19,9 +19,9 @@ public class AchillesServicesImpl implements AchillesServices {
     public boolean authenticateUser(String versionId, UserResponse response){
         try{
             String decoded = new String(Base64.getDecoder().decode(versionId));
-            String received = versionKey.getMemory().get(decoded);
+            byte[] received = versionKey.getMemory().get(decoded);
             if (received != null){
-                String encoded = Base64.getEncoder().encodeToString(received.getBytes());
+                String encoded = Base64.getEncoder().encodeToString(received);
                 response.setKey(encoded);
                 response.setState(true);
                 return true;
@@ -36,12 +36,12 @@ public class AchillesServicesImpl implements AchillesServices {
 
     public boolean updateSystemVersionId(AdminRequest request, UserResponse response){
         try {
-            String versionId = request.getVersionId();
-            String decoder = request.getDecoder();
+            String versionId = new String(Base64.getDecoder().decode(request.getVersionId()));
+            byte[] decoder = Base64.getDecoder().decode(request.getDecoder());
             if (!versionKey.getMemory().containsKey(versionId)) {
                 versionKey.getMemory().put(versionId, decoder);
                 String encoded = Base64.getEncoder().encodeToString(versionId.getBytes());
-                response.setKey("Completed - Encoded Base64: " + encoded);
+                response.setKey("Completed - Version ID added: " + encoded);
             } else {
                 response.setKey("Already exists");
             }
@@ -58,7 +58,7 @@ public class AchillesServicesImpl implements AchillesServices {
         response.setKey("Logged");
         System.out.println("Assets logging requested: " + LocalDateTime.now());
         System.out.println("VersionId : Decoder");
-        versionKey.getMemory().forEach((key, value) -> System.out.println(key + " : " + value));
+        versionKey.getMemory().forEach((key, value) -> System.out.println(key.trim() + " : " + new String(value).trim()));
         return true;
     }
 
