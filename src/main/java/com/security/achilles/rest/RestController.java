@@ -5,14 +5,12 @@ import com.security.achilles.model.AdminRequest;
 import com.security.achilles.model.UserRequest;
 import com.security.achilles.model.UserResponse;
 import com.security.achilles.services.AchillesServices;
+import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -43,7 +41,7 @@ public class RestController {
         return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
     }
 
-    @PostMapping("/update")
+    @PostMapping("/admin/update")
     public ResponseEntity<UserResponse> updateSupportingVersionId(@RequestBody AdminRequest request, @RequestHeader Map<String,Object> headers) {
         String adminSecret = headers.get("secret").toString();
         UserResponse response = new UserResponse();
@@ -56,6 +54,18 @@ public class RestController {
         }
         response.setKey("Unauthorized");
         response.setState(false);
+        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+    }
+
+    @GetMapping("/admin/assets")
+    public ResponseEntity<UserResponse> logAssets(@RequestHeader Map<String, Object> headers){
+        String adminSecret = headers.get("secret").toString();
+        UserResponse response = new UserResponse();
+        if (adminSecret.equals(appConfiguration.getADMIN_SECRET())){
+            achillesServices.logAssetsService(response);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        response.setKey("Unauthorized");
         return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
     }
 

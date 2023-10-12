@@ -7,6 +7,9 @@ import com.security.achilles.services.AchillesServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.Base64;
+
 @Service
 public class AchillesServicesImpl implements AchillesServices {
 
@@ -15,16 +18,17 @@ public class AchillesServicesImpl implements AchillesServices {
 
     public boolean authenticateUser(String versionId, UserResponse response){
         try{
-            String received = versionKey.getMemory().get(versionId);
+            String decoded = new String(Base64.getDecoder().decode(versionId));
+            String received = versionKey.getMemory().get(decoded);
             if (received != null){
-                response.setKey(versionKey.getMemory().get(versionId));
+                String encoded = Base64.getEncoder().encodeToString(received.getBytes());
+                response.setKey(encoded);
                 response.setState(true);
                 return true;
             } else throw new NullPointerException("Invalid version ID");
         } catch (Exception e){
             response.setState(false);
             response.setKey("Invalid version ID");
-            e.printStackTrace();
             return false;
         }
     }
@@ -36,7 +40,8 @@ public class AchillesServicesImpl implements AchillesServices {
             String decoder = request.getDecoder();
             if (!versionKey.getMemory().containsKey(versionId)) {
                 versionKey.getMemory().put(versionId, decoder);
-                response.setKey("Completed");
+                String encoded = Base64.getEncoder().encodeToString(versionId.getBytes());
+                response.setKey("Completed - Encoded Base64: " + encoded);
             } else {
                 response.setKey("Already exists");
             }
@@ -44,9 +49,17 @@ public class AchillesServicesImpl implements AchillesServices {
             return true;
         } catch (Exception e){
             response.setState(false);
-            e.printStackTrace();
             return false;
         }
+    }
+
+    public boolean logAssetsService(UserResponse response){
+        response.setState(true);
+        response.setKey("Logged");
+        System.out.println("Assets logging requested: " + LocalDateTime.now());
+        System.out.println("VersionId : Decoder");
+        versionKey.getMemory().forEach((key, value) -> System.out.println(key + " : " + value));
+        return true;
     }
 
 }
