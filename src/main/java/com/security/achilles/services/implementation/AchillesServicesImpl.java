@@ -1,25 +1,27 @@
 package com.security.achilles.services.implementation;
 
+import com.security.achilles.entity.VersionStoreEntity;
 import com.security.achilles.model.AdminRequest;
 import com.security.achilles.model.UserResponse;
-import com.security.achilles.model.VersionKey;
+import com.security.achilles.repository.VersionStoreRepository;
 import com.security.achilles.services.AchillesServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.List;
 
 @Service
 public class AchillesServicesImpl implements AchillesServices {
 
     @Autowired
-    VersionKey versionKey;
+    VersionStoreRepository versionStoreRepository;
 
     public boolean authenticateUser(String versionId, UserResponse response){
         try{
             String decoded = new String(Base64.getDecoder().decode(versionId));
-            byte[] received = versionKey.getMemory().get(decoded);
+            byte[] received = versionStoreRepository.findById(decoded).get().getDecoder();
             if (received != null){
                 String encoded = Base64.getEncoder().encodeToString(received);
                 response.setKey(encoded);
@@ -38,8 +40,9 @@ public class AchillesServicesImpl implements AchillesServices {
         try {
             String versionId = new String(Base64.getDecoder().decode(request.getVersionId()));
             byte[] decoder = Base64.getDecoder().decode(request.getDecoder());
-            if (!versionKey.getMemory().containsKey(versionId)) {
-                versionKey.getMemory().put(versionId, decoder);
+            if (versionStoreRepository.findById(versionId).isEmpty()) {
+                VersionStoreEntity versionStoreEntity = new VersionStoreEntity(versionId, decoder);
+                versionStoreRepository.save(versionStoreEntity);
                 String encoded = Base64.getEncoder().encodeToString(versionId.getBytes());
                 response.setKey("Completed - Version ID added: " + encoded);
             } else {
@@ -58,15 +61,15 @@ public class AchillesServicesImpl implements AchillesServices {
         response.setKey("Logged");
         System.out.println("Assets logging requested: " + LocalDateTime.now());
         System.out.println("VersionId : Decoder");
-        versionKey.getMemory().forEach((key, value) -> System.out.println(key.trim() + " : " + new String(value).trim()));
+        ((List<VersionStoreEntity>) versionStoreRepository.findAll()).forEach(e -> System.out.println(e.getVersionId().trim() + " : " + new String(e.getDecoder()).trim()));
         return true;
     }
 
     public boolean deleteVersionIdService(String versionId, UserResponse response){
         try {
             String decoded = new String(Base64.getDecoder().decode(versionId));
-            if (versionKey.getMemory().containsKey(decoded)) {
-                versionKey.getMemory().remove(decoded);
+            if (!versionStoreRepository.findById(decoded).isEmpty()) {
+                versionStoreRepository.deleteById(decoded);
                 response.setKey("Deleted - Version ID (Decoded) removed: " + decoded.trim());
             } else {
                 response.setKey("Version Id does not exists");
@@ -81,13 +84,13 @@ public class AchillesServicesImpl implements AchillesServices {
 
     public boolean purgeService(UserResponse response){
         response.setState(true);
-        int count = versionKey.getMemory().keySet().size();
+        int count = ((List<VersionStoreEntity>) versionStoreRepository.findAll()).size();
         if (count > 0){
-            response.setKey("Success. Total removal count: " + versionKey.getMemory().keySet().size());
+            response.setKey("Success. Total removal count: " + count);
         } else {
             response.setKey("No data persisted in application at the moment");
         }
-        versionKey.getMemory().clear();
+        versionStoreRepository.deleteAll();
         return true;
     }
 
