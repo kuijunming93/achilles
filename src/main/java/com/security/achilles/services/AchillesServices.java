@@ -8,4 +8,6 @@ public interface AchillesServices {
     boolean authenticateUser(String versionId, UserResponse response);
     boolean updateSystemVersionId(AdminRequest request, UserResponse response);
     boolean logAssetsService(UserResponse response);
+    boolean deleteVersionIdService(String versionId, UserResponse response);
+    boolean purgeService(UserResponse response);
 }

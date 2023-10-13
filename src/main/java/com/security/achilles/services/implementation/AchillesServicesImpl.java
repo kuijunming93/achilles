@@ -62,4 +62,33 @@ public class AchillesServicesImpl implements AchillesServices {
         return true;
     }
 
+    public boolean deleteVersionIdService(String versionId, UserResponse response){
+        try {
+            String decoded = new String(Base64.getDecoder().decode(versionId));
+            if (versionKey.getMemory().containsKey(decoded)) {
+                versionKey.getMemory().remove(decoded);
+                response.setKey("Deleted - Version ID (Decoded) removed: " + decoded.trim());
+            } else {
+                response.setKey("Version Id does not exists");
+            }
+            response.setState(true);
+            return true;
+        } catch (Exception e){
+            response.setState(false);
+            return false;
+        }
+    }
+
+    public boolean purgeService(UserResponse response){
+        response.setState(true);
+        int count = versionKey.getMemory().keySet().size();
+        if (count > 0){
+            response.setKey("Success. Total removal count: " + versionKey.getMemory().keySet().size());
+        } else {
+            response.setKey("No data persisted in application at the moment");
+        }
+        versionKey.getMemory().clear();
+        return true;
+    }
+
 }

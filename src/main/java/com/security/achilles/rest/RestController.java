@@ -69,4 +69,30 @@ public class RestController {
         return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
     }
 
+    @PostMapping("/admin/delete")
+    public ResponseEntity<UserResponse> deleteVersionId(@RequestBody AdminRequest request, @RequestHeader Map<String,Object> headers) {
+        String adminSecret = headers.get("secret").toString();
+        UserResponse response = new UserResponse();
+        if (adminSecret.equals(appConfiguration.getADMIN_SECRET())){
+            if (achillesServices.deleteVersionIdService(request.getVersionId(), response)){
+                return new ResponseEntity<>(response, HttpStatus.OK);
+            }
+            return new ResponseEntity<>(response, HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+        response.setKey("Unauthorized");
+        response.setState(false);
+        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+    }
+
+    @GetMapping("/admin/purge")
+    public ResponseEntity<UserResponse> purge(@RequestHeader Map<String, Object> headers){
+        String adminSecret = headers.get("secret").toString();
+        UserResponse response = new UserResponse();
+        if (adminSecret.equals(appConfiguration.getADMIN_SECRET())){
+            achillesServices.purgeService(response);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        response.setKey("Unauthorized");
+        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+    }
 }
