@@ -1,8 +1,10 @@
 package com.security.achilles.services.implementation;
 
+import com.security.achilles.entity.IPStoreEntity;
 import com.security.achilles.entity.VersionStoreEntity;
 import com.security.achilles.model.AdminRequest;
 import com.security.achilles.model.UserResponse;
+import com.security.achilles.repository.IPStoreRepository;
 import com.security.achilles.repository.VersionStoreRepository;
 import com.security.achilles.services.AchillesServices;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,11 +59,12 @@ public class AchillesServicesImpl implements AchillesServices {
     }
 
     public boolean logAssetsService(UserResponse response){
+        List<VersionStoreEntity> data = (List<VersionStoreEntity>) versionStoreRepository.findAll();
         response.setState(true);
-        response.setKey("Logged");
+        response.setKey("Logged: " + data.size());
         System.out.println("Assets logging requested: " + LocalDateTime.now());
         System.out.println("VersionId : Decoder");
-        ((List<VersionStoreEntity>) versionStoreRepository.findAll()).forEach(e -> System.out.println(e.getVersionId().trim() + " : " + new String(e.getDecoder()).trim()));
+        data.forEach(e -> System.out.println(e.getVersionId().trim() + " : " + new String(e.getDecoder()).trim()));
         return true;
     }
 
