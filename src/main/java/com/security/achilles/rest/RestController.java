@@ -1,11 +1,9 @@
 package com.security.achilles.rest;
 
+import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.security.achilles.config.AppConfiguration;
 import com.security.achilles.entity.IPStoreEntity;
-import com.security.achilles.model.AdminRequest;
-import com.security.achilles.model.AdminResponse;
-import com.security.achilles.model.UserRequest;
-import com.security.achilles.model.UserResponse;
+import com.security.achilles.model.*;
 import com.security.achilles.repository.IPStoreRepository;
 import com.security.achilles.services.AchillesServices;
 import jakarta.servlet.http.HttpServletRequest;
@@ -36,6 +34,17 @@ public class RestController {
     @Autowired
     IPStoreRepository ipStoreRepository;
 
+    @Autowired
+    Broadcast broadcast;
+
+    @GetMapping("/broadcast")
+    public ResponseEntity<Object> getBroadcast(@RequestHeader Map<String, Object> headers){
+        String userSecret = headers.get("secret").toString();
+        if (userSecret.equals(appConfiguration.getSECRET())){
+            return new ResponseEntity<>(broadcast.getContent(), HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    }
 
     @PostMapping("/authenticate")
     public ResponseEntity<UserResponse> authenticate(@RequestBody UserRequest request, @RequestHeader Map<String,Object> headers, HttpServletRequest httpServletRequest) {
